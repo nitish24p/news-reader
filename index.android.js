@@ -1,51 +1,59 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- */
+'use strict;'
 
-import React, { Component } from 'react';
+import React from 'react';
+
 import {
   AppRegistry,
   StyleSheet,
-  Text,
-  View
-} from 'react-native';
+  Navigator,
+  BackAndroid
+}  from 'react-native';
 
-class NewsReader extends Component {
-  render() {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.welcome}>
-          Welcome to React Native!
-        </Text>
-        <Text style={styles.instructions}>
-          To get started, edit index.android.js
-        </Text>
-        <Text style={styles.instructions}>
-          Shake or press menu button for dev menu
-        </Text>
-      </View>
-    );
-  }
+var NewsItems = require('./components/news-item');
+var WebPage = require('./components/web-page');
+
+var ROUTES = {
+  news_item: NewsItems,
+  web_page: WebPage 
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-  },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
-  },
+var _navigator;
+BackAndroid.addEventListener('hardwareBackPress', () => {
+    if (_navigator && _navigator.getCurrentRoutes().length > 1) {
+         _navigator.pop();
+        return true;
+    }
+  return false;
 });
 
+
+var NewsReader = React.createClass({
+
+  renderScene : function(route, navigator) {
+    _navigator = navigator;
+    var Component = ROUTES[route.name];
+    return(
+        <Component route={route} navigator={navigator} url={route.url}/>
+      )
+    },
+
+    render: function() {
+        return(
+            <Navigator
+                style={styles.container}
+                initialRoute={{name: 'news_item', url: ''}}
+                renderScene={this.renderScene}
+                configureScreen={() => {return Navigator.SceneConfigs.HorizontalSwipeJumpFromRight;}}
+            />
+        );
+    }
+
+});
+
+var styles = StyleSheet.create({
+  container: {
+    flex: 1
+  }
+});
+ 
 AppRegistry.registerComponent('NewsReader', () => NewsReader);
