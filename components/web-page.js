@@ -53,7 +53,6 @@ var WebPage = React.createClass({
     },
  
     onNavigationStateChange: function(navState) {
-         console.log(navState);
         if(!navState.loading){
             this.setState({
                 isLoading: false,

@@ -86,7 +86,6 @@ var NewsItems = React.createClass({
                     if(diff_days > 0){
                         this.getNews();
                     }else{
-                        console.log(news_items);
                         this.updateNewsItemsUI(news_items);
                     }
  
@@ -155,7 +154,6 @@ var NewsItems = React.createClass({
  
         api(TOP_STORIES_URL).then(
           (top_stories) => {
-                 console.log(top_stories);
                 for(var x = 0; x <= 10; x++){
  
                     var story_url = "https://hacker-news.firebaseio.com/v0/item/" + top_stories[x] + ".json";
