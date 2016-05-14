@@ -11,7 +11,8 @@ import {
   ScrollView,
   TouchableHighlight,
   AsyncStorage,
-  Image
+  Image,
+  Picker
 }  from 'react-native';;
 
 import { Button, Card } from 'react-native-material-design';
@@ -47,18 +48,34 @@ var NewsItems = React.createClass({
                     <View style={styles.header_item}>
                         <Text style={styles.header_text}>{this.state.title}</Text>
                     </View>
-                    <View style={styles.header_item}>
+                    <View style={styles.category_picker}>
+                      <Picker
+                        mode={'dropdown'}
+                        selectedValue={this.state.category}
+                        onValueChange={(topic) => {
+                          this.setState({category: topic})
+                          this.getNews(topic);
+                          this.setState({ loaded : false});
+                        }}>
+                        <Picker.Item label="Home" value="home"  />
+                        <Picker.Item label="Sports" value="sports" />
+                        <Picker.Item label="Travel" value="travel" />
+                        <Picker.Item label="Food" value="food" />
+                        <Picker.Item label="Technology" value="technology" />
+                        <Picker.Item label="Movies" value="movies" />
+                      </Picker>
+                    </View>
+                </View>
+                <View style={styles.loader}>
                     {  !this.state.loaded && 
                         <GiftedSpinner />
                     }
                     </View>
-                </View>
                 <View style={styles.body}>
                 
                 <ScrollView ref="scrollView">
                 {
-                    this.state.loaded && 
-                     
+                    this.state.loaded &&  
                     <ListView initialListSize={1} dataSource={this.state.news} style={styles.news} renderRow={this.renderNews}></ListView>
                      
                 }
@@ -85,14 +102,14 @@ var NewsItems = React.createClass({
                     var diff_days = current_datetime.diff(last_cache, 'days');
                      
                     if(diff_days > 0){
-                        this.getNews();
+                        this.getNews('home');
                     }else{
                         this.updateNewsItemsUI(news_items);
-                    }
+                    } 
                 });
 
             }else{
-                this.getNews();
+                this.getNews('home');
             }
  
         }).done();
@@ -109,6 +126,7 @@ var NewsItems = React.createClass({
                     />
                     <Card.Body>
                         <Text style={styles.news_item_text}>{news.title}</Text>
+                        <Text style={styles.news_item_text_abstract}>{news.abstract}</Text>
                     </Card.Body>
                     <Card.Actions position="right">
                         <Button style={styles.action_button} text="Read More" onPress={this.viewPage.bind(this, news.url)} />
@@ -144,11 +162,10 @@ var NewsItems = React.createClass({
  
     },
  
-    getNews: function() {   
-         
-        var TOP_STORIES_URL = 'https://api.nytimes.com/svc/topstories/v2/home.json?api-key=bf978995a5a14d3f8f05ebe8fbba3d30';
+    getNews: function(topic) {   
+        
+        var TOP_STORIES_URL = 'https://api.nytimes.com/svc/topstories/v2/' + topic + '.json?api-key=bf978995a5a14d3f8f05ebe8fbba3d30';
         var news_items = [];
- 
         AsyncStorage.setItem('time', JSON.stringify({'last_cache': moment()}));
  
         api(TOP_STORIES_URL).then(
@@ -163,7 +180,8 @@ var NewsItems = React.createClass({
                     var news_item = {
                       'title': top_stories_results_array[x].title,
                       'url' : top_stories_results_array[x].url,
-                      'image' : image_url
+                      'image' : image_url,
+                      'abstract' : top_stories_results_array[x].abstract
                     }
  
                   news_items.push(news_item);
@@ -188,6 +206,12 @@ var styles = StyleSheet.create({
   container: {
     flex: 1
   },
+  category_picker: {
+    flex:1,
+  },
+  category_picker_item: {
+    color: '#eaeaea'
+  },
   header: {
     backgroundColor: '#00695c',
     padding: 8,
@@ -197,7 +221,7 @@ var styles = StyleSheet.create({
   },
   body: {
     flex: 9,
-    backgroundColor: '#F6F6EF'
+    backgroundColor: '#fafafa'
   },
   header_item: {
     paddingLeft: 10,
@@ -224,11 +248,23 @@ var styles = StyleSheet.create({
     color: '#575757',
     fontSize: 18
   },
+  news_item_text_abstract: {
+    color: '#575757',
+    fontSize: 14,
+    marginTop:10
+  },
   action_button: {
     fontSize:55
   },
   card: {
     marginBottom: 20
+  },
+  loader : {
+    flex: 1,
+    paddingTop: 10
+  },
+  picker_label: {
+    color: '#ffffff'
   }
 });
  
