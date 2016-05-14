@@ -22,6 +22,7 @@ var api = require('../src/api.js');
  
 var moment = require('moment');
  
+
 var TOTAL_NEWS_ITEMS = 10;
  
 
@@ -88,10 +89,8 @@ var NewsItems = React.createClass({
                     }else{
                         this.updateNewsItemsUI(news_items);
                     }
- 
                 });
-                 
- 
+
             }else{
                 this.getNews();
             }
@@ -105,7 +104,7 @@ var NewsItems = React.createClass({
           <View>
               <Card style={styles.card}>
                     <Card.Media
-                        image={<Image source={{uri: 'https://www.practo.com/consult/bundles/cwipage/images/home-banner-v5.jpg'}} />}
+                        image={<Image source={{uri: news.image}} />}
                         overlay
                     />
                     <Card.Body>
@@ -147,33 +146,34 @@ var NewsItems = React.createClass({
  
     getNews: function() {   
          
-        var TOP_STORIES_URL = 'https://hacker-news.firebaseio.com/v0/topstories.json';
+        var TOP_STORIES_URL = 'https://api.nytimes.com/svc/topstories/v2/home.json?api-key=bf978995a5a14d3f8f05ebe8fbba3d30';
         var news_items = [];
  
         AsyncStorage.setItem('time', JSON.stringify({'last_cache': moment()}));
  
         api(TOP_STORIES_URL).then(
           (top_stories) => {
+                var top_stories_results_array = top_stories.results;
                 for(var x = 0; x <= 10; x++){
+                    if (top_stories_results_array[x].multimedia.length > 4) {
+                      var image_url = top_stories_results_array[x].multimedia[Math.floor(Math.random()*4)].url;
+                    } else {
+                      var image_url = 'http://promokit.eu/wp-content/uploads/2012/10/404_1.jpg';
+                    }
+                    var news_item = {
+                      'title': top_stories_results_array[x].title,
+                      'url' : top_stories_results_array[x].url,
+                      'image' : image_url
+                    }
  
-                    var story_url = "https://hacker-news.firebaseio.com/v0/item/" + top_stories[x] + ".json";
- 
-                    api(story_url).then(
-                        (story) => {
- 
-                            news_items.push(story);
-                            this.updateNewsItemsUI(news_items);
-                            this.updateNewsItemDB(news_items);
- 
-                        }
-                    );
- 
+                  news_items.push(news_item);
+                  this.updateNewsItemsUI(news_items);
+                  this.updateNewsItemDB(news_items);
                 }
                  
- 
             }
  
- 
+            
  
         );
          
